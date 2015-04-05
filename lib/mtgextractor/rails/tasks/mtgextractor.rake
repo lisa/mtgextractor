@@ -39,7 +39,23 @@ def establish_connection
 end
 
 def process_set(set_name)
-  set = MtgSet.find_or_create_by(:name => set_name)
+  # Use these encoding options to force/strip any UTF-8 data to ASCII
+  # Chiefly used for Magic: The Gathering—Conspiracy set and Rails 4.1.6
+  # sqlite3 adapter.
+  encoding_options = {
+    :invalid           => :replace,
+    :undef             => :replace,
+    :replace           => '',
+    :universal_newline => true,
+  }
+  
+  # Do the conversion only when talking about SQL, otherwise the HTTP fetch will fail.
+  if ActiveRecord::Base.connection.instance_of? ActiveRecord::ConnectionAdapters::SQLite3Adapter
+    set = MtgSet.find_or_create_by(:name => set_name.encode(Encoding.find("ASCII"), encoding_options))
+  else
+    set = MtgSet.find_or_create_by(:name => set_name)
+  end
+  
   if using_asset_pipeline?
     folder_path = "#{Rails.root}/app#{asset_pipeline_prefix}/images/#{set.folder_name}"
   else

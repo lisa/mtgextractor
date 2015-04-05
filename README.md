@@ -30,7 +30,7 @@ Rails applications that use this gem will be able to:
 
 Configure your Gemfile:
 
-    gem 'mtgextractor', :git => 'git://github.com/JAndritsch/mtgextractor.git'
+    gem 'mtgextractor', :git => 'git://github.com/lisa/mtgextractor.git'
 
 Install the gem:
 
@@ -227,6 +227,18 @@ URL for a card details page. Example:
     black_lotus_url = 'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=600'
     card_extractor = MTGExtractor::CardExtractor.new(black_lotus_url)
     black_lotus_data = card_extractor.get_card_details
+
+## Caveats
+
+Presently there is a problem with Wizards of the Coast website. On their set page they list
+the Conspiracy expansion as Magic: The Gathering—Conspiracy. Note the — character, it is not
+the same as a hyphen (-). It can also be written as: Magic: The Gathering\xE2\x80\x94Conspiracy
+It is a UTF-8 string. Attempting to use this will cause problems with Rails and sqlite3:
+
+Encoding::UndefinedConversionError: "\xE2" from ASCII-8BIT to UTF-8
+
+This fork works around this limitation by removing non-ASCII characters, thus, the set will be
+named Magic: The GatheringConspiracy. This is unfortunate, but necessary for use with sqlite3.
 
 ## Support
 
